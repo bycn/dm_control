@@ -20,15 +20,33 @@
     <geom name="wall_y" type="plane" pos="0 -.3 .02" zaxis="0 1 0"  size=".3 .02 .02" material="decoration"/>
     <geom name="wall_neg_x" type="plane" pos=".3 0 .02" zaxis="-1 0 0"  size=".02 .3 .02" material="decoration"/>
     <geom name="wall_neg_y" type="plane" pos="0 .3 .02" zaxis="0 -1 0"  size=".3 .02 .02" material="decoration"/>
-
-    <body name="pointmass" pos="0 0 .01">
+<!-- ORIGINAL -->
+    <!-- <body name="pointmass" pos="0 0 .01">
       <camera name="cam0" pos="0 -0.3 0.3" xyaxes="1 0 0 0 0.7 0.7"/>
       <joint name="root_x" type="slide"  pos="0 0 0" axis="1 0 0" />
       <joint name="root_y" type="slide"  pos="0 0 0" axis="0 1 0" />
-      <geom name="pointmass" type="sphere" size=".01" material="self" mass=".3"/>
+      <geom name="pointmass" type="sphere" size=".045" material="self" mass=".3"/>
+    </body> -->
+    <body name="pointmass" pos="0 0 .01">
+      <camera name="cam0" pos="0 -0.3 0.3" xyaxes="1 0 0 0 0.7 0.7"/>
+      <joint name="root_x" type="slide" range="-.2 .2" pos="0 0 0" axis="1 0 0" />
+      <joint name="root_y" type="slide" range="-.2 .2" pos="0 0 0" axis="0 1 0" />
+      <geom rgba="1 1 0 1" name="pointmass" type="sphere" size=".045" material="self" mass=".3"/>
     </body>
 
-    <geom name="target" pos="0 0 .01" material="target" type="sphere" size=".015"/>
+    <!-- <body name="target" pos="0 0 .01">
+      <joint name="target_x" type="slide" range="-.03 .03" pos="0 0 0" axis="1 0 0" />
+      <joint name="target_y" type="slide"  range="-.03 .03" pos="0 0 0" axis="0 1 0" />
+      <geom name="target" pos="0 0 .01" material="target" type="sphere" size=".03"/>
+    </body> -->
+
+    <geom rgba="0 1 0 1" name="target" pos="0 0 .01" material="target" type="sphere" size=".045"/>
+    <!-- <body name="target" pos="0 0 .01">
+      <joint name="target_x" type="slide" range="-.2 .2" pos="0 0 0" axis="1 0 0" />
+      <joint name="target_y" type="slide"  range="-.2 .2" pos="0 0 0" axis="0 1 0" />
+      <geom rgba="0 1 0 1" name="target" pos="0 0 .01" material="target" type="sphere" size=".045"/>
+    </body> -->
+    
   </worldbody>
 
   <tendon>

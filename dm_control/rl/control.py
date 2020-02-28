@@ -198,6 +198,11 @@ def compute_n_steps(control_timestep, physics_timestep, tolerance=1e-8):
 
 
 def _spec_from_observation(observation):
+  #wip make it run if it is ordereddict
+  # if not type(observation) is dict:
+    # return specs.Array(observation.shape, observation.dtype)
+  if not isinstance(observation, collections.OrderedDict):
+    return specs.Array(observation.shape, observation.dtype)
   result = collections.OrderedDict()
   for key, value in six.iteritems(observation):
     result[key] = specs.Array(value.shape, value.dtype, name=key)

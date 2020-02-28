@@ -61,7 +61,29 @@ class Task(control.Task):
 
   def action_spec(self, physics):
     """Returns a `BoundedArraySpec` matching the `physics` actuators."""
+    from dm_env import specs
+    
+    # discrete for td3/ddpg
+    # return specs.BoundedArray(shape=(5,),
+    #                           dtype=mujoco.action_spec(physics).dtype,
+    #                           minimum=[0,0,0,0,0],
+    #                           maximum=[1,1,1,1,1],
+    #                           name='hello')
+    
+    # original
     return mujoco.action_spec(physics)
+
+  # def observation_spec(self, physics):
+  #   from dm_env import specs
+  #   sp= {}
+  #   sp["observation"] = specs.BoundedArray(shape=(64*64*3,),
+  #                           dtype=mujoco.action_spec(physics).dtype,
+  #                           minimum=np.zeros(64*64*3),
+  #                           maximum=255. * np.ones(64*64*3),
+  #                           name='imageobs')
+  #   sp["desired_goal"] = specs.BoundedArray(shape=(2,),dtype=mujoco.action_spec(physics).dtype, minimum=(-1, -1), maximum = (1, 1))
+  #   sp["achieved_goal"] = specs.BoundedArray(shape=(2,),dtype=mujoco.action_spec(physics).dtype, minimum=(-1, -1), maximum = (1, 1))
+  #   return sp
 
   def initialize_episode(self, physics):
     """Resets geom colors to their defaults after starting a new episode.

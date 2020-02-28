@@ -30,7 +30,7 @@ from dm_control.utils import containers
 from dm_control.utils import rewards
 import numpy as np
 
-_DEFAULT_TIME_LIMIT = 20
+_DEFAULT_TIME_LIMIT = 2
 SUITE = containers.TaggedTasks()
 
 
@@ -114,17 +114,72 @@ class PointMass(base.Task):
   def get_observation(self, physics):
     """Returns an observation of the state."""
     obs = collections.OrderedDict()
-    obs['position'] = physics.position()
-    obs['velocity'] = physics.velocity()
+
+    # original
+    # obs['position'] = physics.position()
+    # obs['velocity'] = physics.velocity()
+    # obs['observation'] = np.concatenate([physics.position(),physics.velocity()])
+
+    # pixels
+    # obs['observation'] = physics.render(64,64,0).copy()
+    #flatten pixels
+    obs['observation'] = physics.render(64,64,0).flatten().copy()
+    # obs['observation'] = np.transpose(physics.render(64,64,0), (2,0,1)).copy()
+    obs['desired_goal'] = physics.named.data.geom_xpos['target'][:2].copy()
+    obs['achieved_goal'] = physics.named.data.geom_xpos['pointmass'][:2].copy()
+
     return obs
 
   def get_reward(self, physics):
     """Returns a reward to the agent."""
-    target_size = physics.named.model.geom_size['target', 0]
-    near_target = rewards.tolerance(physics.mass_to_target_dist(),
-                                    bounds=(0, target_size), margin=target_size)
-    control_reward = rewards.tolerance(physics.control(), margin=1,
-                                       value_at_margin=0,
-                                       sigmoid='quadratic').mean()
-    small_control = (control_reward + 4) / 5
-    return near_target * small_control
+    # target_size = 0.3
+    # near_target = rewards.tolerance(physics.mass_to_target_dist(), sigmoid="quadratic",
+    #                                 bounds=(0, 0), margin=target_size)
+    # control_reward = rewards.tolerance(physics.control(), margin=1,
+    #                                    value_at_margin=0,
+    #                                    sigmoid='quadratic').mean()
+    # small_control = (control_reward + 4) / 5
+    # return near_target * small_control
+
+    # Sparse reward
+
+    # eps = 0.1
+    # return 1 if physics.mass_to_target_dist() < eps else 0
+
+    # Dense reward - distance only
+    target_size = 0.3
+    return rewards.tolerance(physics.mass_to_target_dist(), sigmoid="quadratic",
+                                     bounds=(0, 0), margin=target_size)
+
+
+
+  def before_step(self, action, physics):
+    """Sets the control signal for the actuators to values in `action`."""
+    # Support legacy internal code.
+    
+    #expecting action to be a one hot prediction.
+    # possible_actions = np.array([[0,0], [1,1], [1, -1], [-1, 1], [-1,-1]])
+    # action = possible_actions[np.argmax(action)]
+
+    action = getattr(action, "continuous_actions", action)
+    physics.data.qvel[:2] = action
+    physics.set_control(action*0.)
+
+  def compute_reward(self, achieved_goal, desired_goal, info):
+    """Compute the step reward. This externalizes the reward function and makes
+    it dependent on an a desired goal and the one that was achieved. If you wish to include
+    additional rewards that are independent of the goal, you can include the necessary values
+    to derive it in info and compute it accordingly.
+    Args:
+        achieved_goal (object): the goal that was achieved during execution
+        desired_goal (object): the desired goal that we asked the agent to attempt to achieve
+        info (dict): an info dictionary with additional information
+    Returns:
+        float: The reward that corresponds to the provided achieved goal w.r.t. to the desired
+        goal. Note that the following should always hold true:
+            ob, reward, done, info = env.step()
+            assert reward == env.compute_reward(ob['achieved_goal'], ob['goal'], info)
+    """
+    dist = np.linalg.norm(achieved_goal - desired_goal)
+    eps = 0.1
+    return 1 if dist < eps else 0 
